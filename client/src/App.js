@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Form, Button, Alert, Accordion } from 'react-bootstrap';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Checklist from './components/Checklist';
 
 function App() {
   const [url, setUrl] = useState('');
@@ -43,21 +44,41 @@ function App() {
       {results && (
         <div className="mt-5">
           <h3>Scan Results</h3>
-          <p>Total Errors: {results.categories.error.count}</p>
-          <Accordion>
-            {results.categories.error.items.map((issue, index) => (
-              <Accordion.Item eventKey={index.toString()} key={index}>
-                <Accordion.Header>{issue.description}</Accordion.Header>
-                <Accordion.Body>
-                  <p><strong>Element:</strong> <code>{issue.selector}</code></p>
-                  <p><strong>How to Fix:</strong> {issue.help}</p>
-                  <a href={issue.helpUrl} target="_blank" rel="noreferrer">
-                    Learn More
-                  </a>
-                </Accordion.Body>
-              </Accordion.Item>
-            ))}
-          </Accordion>
+          {/* WAVE Results */}
+          <div className="mb-5">
+            <h4>Automated Checks</h4>
+            <p>Total Errors: {results.wave.categories.error.count}</p>
+            <Accordion>
+              {results.categories.error.items.map((issue, index) => (
+                <Accordion.Item eventKey={index.toString()} key={index}>
+                  <Accordion.Header>{issue.description}</Accordion.Header>
+                  <Accordion.Body>
+                    <p><strong>Element:</strong> <code>{issue.selector}</code></p>
+                    <p><strong>How to Fix:</strong> {issue.help}</p>
+                    <a href={issue.helpUrl} target="_blank" rel="noreferrer">
+                      Learn More
+                    </a>
+                  </Accordion.Body>
+                </Accordion.Item>
+              ))}
+            </Accordion>
+          </div>
+
+          {/* Lighthouse Results */}
+          <div className="mb-5">
+            <h4>Performance Metrics</h4>
+            <p>Accessibility Score:
+              {results.lighthouse.categories.accessibility.score * 100}%
+            </p>
+            <ul>
+              {results.lighthouse.audits['color-contrast'].details.items.map((item, i) => (
+                <li key={i}>Low contrast: {item.node.snippet}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Checklist Component */}
+          <Checklist />
         </div>
       )}
     </Container>
