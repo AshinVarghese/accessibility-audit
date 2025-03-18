@@ -1,0 +1,19 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Sharjah",
+			"country": {
+				"code": "AE",
+				"name": "United Arab Emirates"
+			},
+			"subdivision": {
+				"code": "SH",
+				"name": "Sharjah"
+			},
+			"timezone": "Asia/Dubai",
+			"latitude": 25.3412,
+			"longitude": 55.4224
+		},
+		"timestamp": 1742306565597
+	}
+}
