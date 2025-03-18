@@ -13,17 +13,23 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const [waveRes, lighthouseRes] = await Promise.all([
+      const [waveRes, lighthouseRes] = await Promise.allSettled([
         withTimeout(axios.post('/.netlify/functions/wave', { url })),
         withTimeout(axios.post('/.netlify/functions/lighthouse', { url }))
       ]);
 
-      setResults({
-        wave: waveRes.data,
-        lighthouse: lighthouseRes.data
-      });
+      const results = {
+        wave: waveRes.status === 'fulfilled' ? waveRes.value.data : null,
+        lighthouse: lighthouseRes.status === 'fulfilled' ? lighthouseRes.value.data : null
+      };
+
+      setResults(results);
+
+      if (!results.wave || !results.lighthouse) {
+        setError('Partial scan failed - some results may be missing');
+      }
     } catch (err) {
-      setError('Partial scan failed - check console for details');
+      setError('Scan failed - check console for details');
     }
   };
 
