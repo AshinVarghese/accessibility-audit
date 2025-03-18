@@ -8,5 +8,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AshinVarghese/accessibility-audit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AshinVarghese/accessibility-audit/issues"
+  },
+  "homepage": "https://github.com/AshinVarghese/accessibility-audit#readme",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.8.3"
+  }
 }
