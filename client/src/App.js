@@ -3,6 +3,7 @@ import { Container, Form, Button, Alert, Accordion } from 'react-bootstrap';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Checklist from './components/Checklist';
+import { withTimeout } from './utils/api';
 
 function App() {
   const [url, setUrl] = useState('');
@@ -12,11 +13,17 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/.netlify/functions/wave-api', { url });
-      setResults(response.data);
-      setError('');
+      const [waveRes, lighthouseRes] = await Promise.all([
+        withTimeout(axios.post('/.netlify/functions/wave', { url })),
+        withTimeout(axios.post('/.netlify/functions/lighthouse', { url }))
+      ]);
+
+      setResults({
+        wave: waveRes.data,
+        lighthouse: lighthouseRes.data
+      });
     } catch (err) {
-      setError('Error scanning website. Please try again.');
+      setError('Partial scan failed - check console for details');
     }
   };
 
