@@ -9,13 +9,19 @@ function App() {
   const [url, setUrl] = useState('');
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setResults(null);
+
     try {
       const [waveRes, lighthouseRes] = await Promise.allSettled([
-        withTimeout(axios.post('/.netlify/functions/wave', { url })),
-        withTimeout(axios.post('/.netlify/functions/lighthouse', { url }))
+        withTimeout(axios.post('/.netlify/functions/wave', { url }), 8000),
+        withTimeout(axios.post('/.netlify/functions/lighthouse', { url }), 8000)
       ]);
 
       const results = {
@@ -25,11 +31,13 @@ function App() {
 
       setResults(results);
 
-      if (!results.wave || !results.lighthouse) {
-        setError('Partial scan failed - some results may be missing');
+      if (!results.wave && !results.lighthouse) {
+        setError('Both scans failed - please try again');
       }
     } catch (err) {
-      setError('Scan failed - check console for details');
+      setError('Scan failed - please check console for details');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -47,8 +55,13 @@ function App() {
             required
           />
         </Form.Group>
-        <Button variant="primary" type="submit" className="mt-3">
-          Scan Website
+        <Button
+          variant="primary"
+          type="submit"
+          className="mt-3"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Scanning...' : 'Scan Website'}
         </Button>
       </Form>
 
@@ -62,7 +75,7 @@ function App() {
             <h4>Automated Checks</h4>
             <p>Total Errors: {results.wave.categories.error.count}</p>
             <Accordion>
-              {results.categories.error.items.map((issue, index) => (
+              {results.wave.categories.error.items.map((issue, index) => (
                 <Accordion.Item eventKey={index.toString()} key={index}>
                   <Accordion.Header>{issue.description}</Accordion.Header>
                   <Accordion.Body>
@@ -78,17 +91,26 @@ function App() {
           </div>
 
           {/* Lighthouse Results */}
-          <div className="mb-5">
-            <h4>Performance Metrics</h4>
-            <p>Accessibility Score:
-              {results.lighthouse.categories.accessibility.score * 100}%
-            </p>
-            <ul>
-              {results.lighthouse.audits['color-contrast'].details.items.map((item, i) => (
-                <li key={i}>Low contrast: {item.node.snippet}</li>
-              ))}
-            </ul>
-          </div>
+          {results.lighthouse?.score ? (
+            <div className="mb-5">
+              <h4>Accessibility Score</h4>
+              <p>{Math.round(results.lighthouse.score)}%</p>
+              {results.lighthouse.contrastIssues?.length > 0 && (
+                <>
+                  <h5>Color Contrast Issues</h5>
+                  <ul>
+                    {results.lighthouse.contrastIssues.map((item, i) => (
+                      <li key={i}>Low contrast: {item.node.snippet}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+          ) : (
+            <Alert variant="warning" className="mb-5">
+              Lighthouse scan unavailable - try refreshing or check URL validity
+            </Alert>
+          )}
 
           {/* Checklist Component */}
           <Checklist />
